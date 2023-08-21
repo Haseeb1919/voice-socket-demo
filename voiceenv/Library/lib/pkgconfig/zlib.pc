@@ -1,0 +1,13 @@
+prefix=D:/socket voice demo/voiceenv/Library
+exec_prefix=D:/socket voice demo/voiceenv/Library
+libdir=D:/socket voice demo/voiceenv/Library/lib
+sharedlibdir=D:/socket voice demo/voiceenv/Library/lib
+includedir=D:/socket voice demo/voiceenv/Library/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
