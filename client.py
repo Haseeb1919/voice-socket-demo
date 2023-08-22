@@ -1,6 +1,6 @@
 import socket
 import time
-import speech_recognition as sr  # Import the SpeechRecognition library
+import speech_recognition as sr
 
 
 HEADER = 64
@@ -66,7 +66,7 @@ def quit_program():
 
 
 def get_user_input():
-    user_input = input("Do you want to turn on or turn off the device? \n")
+    user_input = input("Do you want to 'TURN ON', 'TURN OFF', 'SCHEDULE' or 'QUIT' the device? \n")
     return user_input
 
 
@@ -76,7 +76,8 @@ def get_voice_input():
 
     with sr.Microphone() as source:
         print("Listening for voice command...")
-        print("++++++++++++++++++++++++++++++++++++")
+        print("=============================")
+        print("Say 'TURN ON', 'TURN OFF','SCHEDULE' or'QUIT' to control the device.")
      
         audio = recognizer.listen(source)
 
@@ -88,24 +89,77 @@ def get_voice_input():
         print("Could not understand audio. Please try again.")
         return ""
 
+chosen_input_method = None
 
+
+
+def schedule_device_action(action_func, time_to_wait):
+    print(f"Scheduling device {action_func.__name__} in {time_to_wait:.2f} seconds.")
+    time.sleep(time_to_wait)
+    action_func()
+
+def schedule():
+    while True:
+        action = input("Do you want to schedule the device to turn on? (yes/no) \n ").lower()
+        if action not in ["yes", "no"]:
+            print("Invalid input. Please enter 'yes' or 'no'.")
+            return
+
+        if action == "no":
+            break
+
+        time_unit = input("Do you want to set the schedule in hours or minutes? ").lower()
+        if time_unit not in ["hours", "minutes"]:
+            print("Invalid input. Please choose 'hours' or 'minutes'.")
+            return
+
+        time_conversion = 60 if time_unit == "minutes" else 3600  # Conversion factor
+
+        start_time = int(input(f"Enter the starting point in {time_unit}: "))
+        end_time = int(input(f"Enter the ending point in {time_unit}: "))
+
+        start_time_seconds = start_time * time_conversion
+        end_time_seconds = end_time * time_conversion
+
+        if action == "yes":
+            schedule_device_action(
+                action_func=turn_on_device,
+                time_to_wait=start_time_seconds,
+            )
+            schedule_device_action(
+                action_func=turn_off_device,
+                time_to_wait=end_time_seconds - start_time_seconds,
+            )
+            break
+
+
+
+
+chosen_input_method = None
 
 while True:
-    print("Choose your input method:")
-    print("1. Text input")
-    print("2. Voice command")
-    print("3. Quit")
-    choice = input("Enter your choice (1/2): ")
+    if chosen_input_method is None:
+        print("Choose your input method:")
+        print("1. Text input")
+        print("2. Voice command")
+        print("3. Quit")
+        choice = input("Enter your choice (1, 2, 3): ")
+        print("=====================================")
 
-    if choice == "1":
+        if choice == "1":
+            chosen_input_method = "text"
+        elif choice == "2":
+            chosen_input_method = "voice"
+        elif choice == "3":
+            quit_program()
+        else:
+            print("Invalid choice. Please enter 1 or 2 or 3")
+            continue
+
+    if chosen_input_method == "text":
         user_input = get_user_input()
-    elif choice == "2":
+    elif chosen_input_method == "voice":
         user_input = get_voice_input()
-    elif choice == "3":
-        quit_program()
-    else:
-        print("Invalid choice. Please enter 1 or 2 or 3")
-        continue
 
     if user_input == "turn on":
         if not device_is_on:
@@ -127,64 +181,3 @@ while True:
         quit_program()
     else:
         print("Invalid input.")
-
-
-# def schedule_device_action(action_func, time_to_wait):
-#     print(f"Scheduling device {action_func.__name__} in {time_to_wait:.2f} seconds.")
-#     time.sleep(time_to_wait)
-#     action_func()
-
-# def schedule():
-#     while True:
-#         action = input("Do you want to schedule the device to turn on? (yes/no) \n ").lower()
-#         if action not in ["yes", "no"]:
-#             print("Invalid input. Please enter 'yes' or 'no'.")
-#             return
-
-#         if action == "no":
-#             break
-
-#         time_unit = input("Do you want to set the schedule in hours or minutes? ").lower()
-#         if time_unit not in ["hours", "minutes"]:
-#             print("Invalid input. Please choose 'hours' or 'minutes'.")
-#             return
-
-#         time_conversion = 60 if time_unit == "minutes" else 3600  # Conversion factor
-
-#         start_time = int(input(f"Enter the starting point in {time_unit}: "))
-#         end_time = int(input(f"Enter the ending point in {time_unit}: "))
-
-#         start_time_seconds = start_time * time_conversion
-#         end_time_seconds = end_time * time_conversion
-
-#         if action == "yes":
-#             schedule_device_action(
-#                 action_func=turn_on_device,
-#                 time_to_wait=start_time_seconds,
-#             )
-#             schedule_device_action(
-#                 action_func=turn_off_device,
-#                 time_to_wait=end_time_seconds - start_time_seconds,
-#             )
-#             break
-
-
-
-# while True:
-#     user_input = get_user_input()
-
-#     if user_input == "turn on":
-#         if not device_is_on:
-#             response = send("turn on")
-#             if response == "Device state is now: on":
-#                 device_on_time = time.time()
-#                 device_is_on = True
-#                 print("Device is now ON")
-#     elif user_input == "turn off":
-#         turn_off_device()
-#     elif user_input == "schedule":
-#         schedule()
-#     elif user_input == "quit":
-#         quit_program()
-#     else:
-#         print("Invalid input.")
